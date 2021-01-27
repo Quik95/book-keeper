@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	kp "github.com/Quik95/book-keeper"
-	"github.com/boltdb/bolt"
 )
 
 func main() {
@@ -29,11 +28,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := bolt.Open(db_location, 0600, nil)
+	store, err := kp.LoadStore(db_location)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer store.Close()
 
-	kp.DumpDBContents(db)
+	store.DumpDBContents()
 }
