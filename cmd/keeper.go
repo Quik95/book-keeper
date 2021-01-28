@@ -23,12 +23,12 @@ func main() {
 		location = filepath.Join(location, "books.db")
 	}
 	// parse and validate the database path
-	db_location, err := filepath.Abs(location)
+	dbLocation, err := filepath.Abs(location)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	store, err := kp.LoadStore(db_location)
+	store, err := kp.LoadStore(dbLocation)
 	if err != nil {
 		log.Fatal(err)
 	}
