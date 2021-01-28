@@ -112,9 +112,13 @@ func itob(v int) []byte {
 }
 
 // BookEntry represents a single book with all it's parameters
+// DateStart and DateEnd store timestamps when the user started
+// and ended reading the book
+// The first timestamp in DateStart corresponds to the first timestamps
+// in DateEnd
 type BookEntry struct {
 	Title, Author      string
-	DateStart, DateEnd time.Time
+	DateStart, DateEnd []time.Time
 	State              BookState
 	ID                 int
 }
@@ -129,4 +133,7 @@ const (
 	Finished = "finished"
 	// Dropped indicates that the book is in the dropped state
 	Dropped = "dropped"
+	// Suspended indicates that the user is no longer reading this book
+	// but might return to it
+	Suspended = "suspended"
 )
