@@ -4,9 +4,13 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"os"
+	"sort"
+	"strconv"
 	"time"
 
 	"github.com/boltdb/bolt"
+	"github.com/olekukonko/tablewriter"
 )
 
 // Store represents application data storage
@@ -57,6 +61,47 @@ func (store Store) DumpDBContents() {
 			fmt.Print("\n\n~~~~~~~~~~\n\n")
 			return nil
 		})
+		return nil
+	})
+}
+
+// PrintBookEntries prints books stored in the database in a friendly format
+func (store Store) PrintBookEntries() error {
+	return store.db.View(func(tx *bolt.Tx) error {
+		bkt := tx.Bucket([]byte("store"))
+		if bkt == nil {
+			return fmt.Errorf("Failed to retrieve the default store")
+		}
+
+		bookList := []BookEntry{}
+		err := bkt.ForEach(func(_, value []byte) error {
+			var book BookEntry
+			err := json.Unmarshal(value, &book)
+			if err != nil {
+				return err
+			}
+			bookList = append(bookList, book)
+
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+
+		sort.Slice(bookList, func(i, j int) bool {
+			return bookList[j].DateStart[0].Before(bookList[i].DateStart[0])
+		})
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Index", "Title", "Author", "Start Date", "End Date", "Reading State"})
+		form := "02 January 2006"
+		for i, book := range bookList {
+			table.Append(
+				[]string{strconv.Itoa(i + 1), book.Title, book.Author, book.DateStart[0].Format(form), book.DateEnd[0].Format(form), string(book.State)},
+			)
+		}
+		table.Render()
+
 		return nil
 	})
 }

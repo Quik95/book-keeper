@@ -34,5 +34,7 @@ func main() {
 	}
 	defer store.Close()
 
-	store.DumpDBContents()
+	if err := store.PrintBookEntries(); err != nil {
+		log.Fatal(err)
+	}
 }
