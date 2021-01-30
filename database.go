@@ -89,7 +89,7 @@ func (store Store) PrintBookEntries() error {
 		}
 
 		sort.Slice(bookList, func(i, j int) bool {
-			return bookList[j].DateStart[0].Before(bookList[i].DateStart[0])
+			return bookList[j].DateStart.Before(bookList[i].DateStart)
 		})
 
 		table := tablewriter.NewWriter(os.Stdout)
@@ -97,7 +97,7 @@ func (store Store) PrintBookEntries() error {
 		form := "02 January 2006"
 		for i, book := range bookList {
 			table.Append(
-				[]string{strconv.Itoa(i + 1), book.Title, book.Author, book.DateStart[0].Format(form), book.DateEnd[0].Format(form), string(book.State)},
+				[]string{strconv.Itoa(i + 1), book.Title, book.Author, book.DateStart.Format(form), book.DateEnd.Format(form), string(book.State)},
 			)
 		}
 		table.Render()
@@ -163,7 +163,7 @@ func itob(v int) []byte {
 // in DateEnd
 type BookEntry struct {
 	Title, Author      string
-	DateStart, DateEnd []time.Time
+	DateStart, DateEnd time.Time
 	State              BookState
 	ID                 int
 }
