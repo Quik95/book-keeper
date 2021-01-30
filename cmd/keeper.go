@@ -37,4 +37,6 @@ func main() {
 	if err := store.PrintBookEntries(); err != nil {
 		log.Fatal(err)
 	}
+
+	kp.WaitForCommand(store)
 }
