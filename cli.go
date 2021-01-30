@@ -82,8 +82,15 @@ func handleAdd(store Store, scanner *bufio.Scanner) {
 	}
 	book.DateEnd = date
 
-	state := printAndScan("Reading State: ", scanner)
-	book.State = BookState(state)
+	for {
+		state := BookState(printAndScan("Reading State: ", scanner))
+		if err := state.IsValid(); err == nil {
+			book.State = BookState(state)
+			break
+		} else {
+			fmt.Printf("%s. Please try again.\n", err)
+		}
+	}
 
 	if err := store.AddBookEntry(book); err != nil {
 		fmt.Printf("Failed to add a book to the collection\n%s\n", err)

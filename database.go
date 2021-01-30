@@ -182,3 +182,14 @@ const (
 	// but might return to it
 	Suspended = "suspended"
 )
+
+// IsValid checks if a given instance of a BookState is valid
+// if not returns an error
+func (bs BookState) IsValid() error {
+	switch bs {
+	case Reading, Finished, Dropped, Suspended:
+		return nil
+	default:
+		return fmt.Errorf("%s is not a valid book state", bs)
+	}
+}
