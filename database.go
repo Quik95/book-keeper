@@ -89,7 +89,7 @@ func (store Store) PrintBookEntries() error {
 		}
 
 		sort.Slice(bookList, func(i, j int) bool {
-			return bookList[j].DateStart.Before(bookList[i].DateStart)
+			return bookList[i].DateStart.Before(bookList[j].DateStart)
 		})
 
 		table := tablewriter.NewWriter(os.Stdout)
