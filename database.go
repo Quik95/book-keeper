@@ -41,6 +41,22 @@ func setupDefaultBucket(db *bolt.DB) error {
 	})
 }
 
+func formatBookEntries(in [][]byte) []BookEntry {
+	bookList := []BookEntry{}
+	for _, bookBytes := range in {
+		var book BookEntry
+		if err := json.Unmarshal(bookBytes, &book); err == nil {
+			bookList = append(bookList, book)
+		}
+	}
+
+	sort.Slice(bookList, func(i, j int) bool {
+		return bookList[i].DateStart.Before(bookList[j].DateStart)
+	})
+
+	return bookList
+}
+
 // Close calls close for each member of Store that needs to be closed
 func (store Store) Close() error {
 	if err := store.db.Close(); err != nil {
@@ -73,25 +89,16 @@ func (store Store) PrintBookEntries() error {
 			return fmt.Errorf("Failed to retrieve the default store")
 		}
 
-		bookList := []BookEntry{}
-		err := bkt.ForEach(func(_, value []byte) error {
-			var book BookEntry
-			err := json.Unmarshal(value, &book)
-			if err != nil {
-				return err
-			}
-			bookList = append(bookList, book)
-
+		var bookBytes [][]byte
+		err := bkt.ForEach(func(k, v []byte) error {
+			bookBytes = append(bookBytes, v)
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 
-		sort.Slice(bookList, func(i, j int) bool {
-			return bookList[i].DateStart.Before(bookList[j].DateStart)
-		})
-
+		bookList := formatBookEntries(bookBytes)
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"Index", "Title", "Author", "Start Date", "End Date", "Reading State"})
 		form := "02 January 2006"
@@ -141,10 +148,27 @@ func (store Store) DeleteBookEntry(bookID int) error {
 			return fmt.Errorf("Failed to retrieve the default store")
 		}
 
-		if err := bkt.Delete(itob(bookID)); err != nil {
+		var rawBytes [][]byte
+		err := bkt.ForEach(func(k, v []byte) error {
+			rawBytes = append(rawBytes, v)
+			return nil
+		})
+		if err != nil {
 			return err
 		}
-		return nil
+
+		// book indexes displayed ot user start at 1
+		// so we substract 1 for 0 starting arrays
+		bookID = bookID - 1
+		books := formatBookEntries(rawBytes)
+		if bookID < len(books) && bookID > 0 {
+			if err := bkt.Delete(itob(books[bookID].ID)); err != nil {
+				return err
+			}
+			return nil
+		}
+
+		return fmt.Errorf("Invalid book index")
 	})
 }
 

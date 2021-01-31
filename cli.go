@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -24,6 +25,8 @@ func WaitForCommand(store Store) {
 			handleAdd(store, scanner)
 		case string(Show):
 			handleShow(store)
+		case string(Delete):
+			handleDelete(store, scanner)
 		case string(Exit):
 			os.Exit(0)
 		}
@@ -33,9 +36,10 @@ func WaitForCommand(store Store) {
 type commandType string
 
 const (
-	Add  commandType = "add"
-	Show             = "show"
-	Exit             = "exit"
+	Add    commandType = "add"
+	Show               = "show"
+	Exit               = "exit"
+	Delete             = "delete"
 )
 
 func printAndScan(msg string, scanner *bufio.Scanner) string {
@@ -100,5 +104,23 @@ func handleAdd(store Store, scanner *bufio.Scanner) {
 func handleShow(store Store) {
 	if err := store.PrintBookEntries(); err != nil {
 		fmt.Println(err)
+	}
+}
+
+func handleDelete(store Store, scanner *bufio.Scanner) {
+	var idx int
+	for {
+		input := printAndScan("Select a book number to delete: ", scanner)
+		i, err := strconv.Atoi(input)
+		if err != nil {
+			fmt.Printf("%s is not a valid book number. Please try again.\n", input)
+		} else {
+			idx = i
+			break
+		}
+	}
+
+	if err := store.DeleteBookEntry(idx); err != nil {
+		fmt.Printf("Failed to delete this book.\n%s\n", err)
 	}
 }
