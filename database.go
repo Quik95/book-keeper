@@ -67,18 +67,20 @@ func (store Store) Close() error {
 
 // DumpDBContents dumps the entire database contents to the console
 func (store Store) DumpDBContents() {
-	store.db.View(func(tx *bolt.Tx) error {
-		tx.ForEach(func(name []byte, b *bolt.Bucket) error {
+	err := store.db.View(func(tx *bolt.Tx) error {
+		return tx.ForEach(func(name []byte, b *bolt.Bucket) error {
 			fmt.Printf("Bucket name: %s\n----------\n", string(name))
-			b.ForEach(func(key, value []byte) error {
+			err := b.ForEach(func(key, value []byte) error {
 				fmt.Printf("Key: %s\nValue: %s\n", string(key), string(value))
 				return nil
 			})
 			fmt.Print("\n\n~~~~~~~~~~\n\n")
-			return nil
+			return err
 		})
-		return nil
 	})
+	if err != nil {
+		fmt.Printf("Error occurred while iterating over entries\n%s\n", err)
+	}
 }
 
 // PrintBookEntries prints books stored in the database in a friendly format
