@@ -23,8 +23,8 @@ func WaitForCommand(store Store) {
 		switch command {
 		case string(Add):
 			handleAdd(store, scanner)
-		case string(Show):
-			handleShow(store)
+		case string(List):
+			handleList(store)
 		case string(Delete):
 			handleDelete(store, scanner)
 		case string(Exit):
@@ -39,7 +39,7 @@ type commandType string
 
 const (
 	Add    commandType = "add"
-	Show   commandType = "show"
+	List   commandType = "list"
 	Exit   commandType = "exit"
 	Delete commandType = "delete"
 )
@@ -103,7 +103,7 @@ func handleAdd(store Store, scanner *bufio.Scanner) {
 	}
 }
 
-func handleShow(store Store) {
+func handleList(store Store) {
 	if err := store.PrintBookEntries(); err != nil {
 		fmt.Println(err)
 	}
