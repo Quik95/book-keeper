@@ -40,9 +40,9 @@ type commandType string
 const (
 	Add    commandType = "add"
 	List   commandType = "list"
-	Exit   commandType = "exit"
 	Delete commandType = "delete"
 	Help   commandType = "help"
+	Exit   commandType = "exit"
 )
 
 func printAndScan(msg string, scanner *bufio.Scanner) string {
