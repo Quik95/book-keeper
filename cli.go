@@ -29,6 +29,8 @@ func WaitForCommand(store Store) {
 			handleDelete(store, scanner)
 		case string(Exit):
 			os.Exit(0)
+		default:
+			fmt.Printf("%s is not a valid command\n", command)
 		}
 	}
 }
