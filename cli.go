@@ -18,8 +18,6 @@ func WaitForCommand(store Store) {
 			command = scanner.Text()
 		}
 
-		fmt.Println(command)
-
 		switch command {
 		case string(Add):
 			handleAdd(store, scanner)
