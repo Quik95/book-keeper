@@ -196,15 +196,10 @@ type BookEntry struct {
 type BookState string
 
 const (
-	// Reading indicates that the book is in the reading state
-	Reading BookState = "reading"
-	// Finished indicates that the book was finished
-	Finished = "finished"
-	// Dropped indicates that the book is in the dropped state
-	Dropped = "dropped"
-	// Suspended indicates that the user is no longer reading this book
-	// but might return to it
-	Suspended = "suspended"
+	Reading   BookState = "reading"
+	Finished  BookState = "finished"
+	Dropped   BookState = "dropped"
+	Suspended BookState = "suspended"
 )
 
 // IsValid checks if a given instance of a BookState is valid

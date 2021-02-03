@@ -37,9 +37,9 @@ type commandType string
 
 const (
 	Add    commandType = "add"
-	Show               = "show"
-	Exit               = "exit"
-	Delete             = "delete"
+	Show   commandType = "show"
+	Exit   commandType = "exit"
+	Delete commandType = "delete"
 )
 
 func printAndScan(msg string, scanner *bufio.Scanner) string {
