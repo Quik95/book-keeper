@@ -27,6 +27,8 @@ func WaitForCommand(store Store) {
 			handleList(store)
 		case string(Delete):
 			handleDelete(store, scanner)
+		case string(Help):
+			handleHelp()
 		case string(Exit):
 			os.Exit(0)
 		default:
@@ -42,6 +44,7 @@ const (
 	List   commandType = "list"
 	Exit   commandType = "exit"
 	Delete commandType = "delete"
+	Help   commandType = "help"
 )
 
 func printAndScan(msg string, scanner *bufio.Scanner) string {
@@ -125,4 +128,13 @@ func handleDelete(store Store, scanner *bufio.Scanner) {
 	if err := store.DeleteBookEntry(idx); err != nil {
 		fmt.Printf("Failed to delete this book.\n%s\n", err)
 	}
+}
+
+func handleHelp() {
+	fmt.Print(
+		"Available commands:\n",
+		"list: list books in the database\n",
+		"add: adds a book to the database\n",
+		"delete: removes a book from the database\n",
+		"exit: exits from the program\n")
 }
