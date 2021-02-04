@@ -105,8 +105,22 @@ func (store Store) PrintBookEntries() error {
 		table.SetHeader([]string{"Index", "Title", "Author", "Start Date", "End Date", "Reading State"})
 		form := "02 January 2006"
 		for i, book := range bookList {
+			var dateStart string
+			var dateEnd string
+			if book.DateStart.IsZero() {
+				dateStart = "??-??-????"
+			} else {
+				dateStart = book.DateStart.Format(form)
+			}
+
+			if book.DateEnd.IsZero() {
+				dateEnd = "??-??-????"
+			} else {
+				dateEnd = book.DateEnd.Format(form)
+			}
+
 			table.Append(
-				[]string{strconv.Itoa(i + 1), book.Title, book.Author, book.DateStart.Format(form), book.DateEnd.Format(form), string(book.State)},
+				[]string{strconv.Itoa(i + 1), book.Title, book.Author, dateStart, dateEnd, string(book.State)},
 			)
 		}
 		table.Render()
