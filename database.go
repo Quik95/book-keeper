@@ -172,7 +172,7 @@ func (store Store) DeleteBookEntry(bookID int) error {
 			return err
 		}
 
-		// book indexes displayed ot user start at 1
+		// book indexes displayed to user start at 1
 		// so we substract 1 for 0 starting arrays
 		bookID = bookID - 1
 		books := formatBookEntries(rawBytes)
