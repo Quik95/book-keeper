@@ -54,6 +54,23 @@ func printAndScan(msg string, scanner *bufio.Scanner) string {
 	return ""
 }
 
+func parseDateInput(input string) (time.Time, error) {
+	if strings.HasPrefix(input, "???") {
+		//user want's unspecified date
+		return time.Time{}, nil
+	} else if len(input) > 0 {
+		// user provided a date, try to parse it
+		if d, err := time.Parse(DateFormat, input); err != nil {
+			return time.Time{}, err
+		} else {
+			// date has been parsed successfully, break from the loop
+			return d, nil
+		}
+	}
+	// user did not provide any date input, use todays date
+	return time.Now(), nil
+}
+
 func handleAdd(store Store, scanner *bufio.Scanner) {
 	book := BookEntry{}
 
@@ -63,47 +80,27 @@ func handleAdd(store Store, scanner *bufio.Scanner) {
 	author := printAndScan("Author: ", scanner)
 	book.Author = author
 
-	date := time.Now()
 	for {
 		startDate := printAndScan("Start Date (leave empty for the current day or ??? for and undefined date): ", scanner)
-		// if date starts with ??? use the date's zero value
-		if strings.HasPrefix(startDate, "???") {
-			date = time.Time{}
+		date, err := parseDateInput(startDate)
+		if err == nil {
+			book.DateStart = date
 			break
-		} else if len(startDate) > 0 {
-			// if user provided a date try to parse it
-			if d, err := time.Parse(DateFormat, startDate); err != nil {
-				fmt.Printf("Couldn't parse the date: %s. Please try again.\n", startDate)
-			} else {
-				// date has been parsed successfully, break from the loop
-				date = d
-				break
-			}
 		} else {
-			// user did not provide any date input, use todays date
-			break
+			fmt.Printf("Couldn't parse the date: %s. Please try again.\n", startDate)
 		}
 	}
-	book.DateStart = date
 
-	date = time.Now()
 	for {
-		endDate := printAndScan("End Date (leave empty for the current day or ??? for an undefined date): ", scanner)
-		if strings.HasPrefix(endDate, "???") {
-			date = time.Time{}
+		endDate := printAndScan("End Date (leave empty for the current day or ??? for and undefined date): ", scanner)
+		date, err := parseDateInput(endDate)
+		if err == nil {
+			book.DateEnd = date
 			break
-		} else if len(endDate) > 0 {
-			if d, err := time.Parse(DateFormat, endDate); err != nil {
-				fmt.Printf("Couldn't parse the date: %s. Please try again.\n", endDate)
-			} else {
-				date = d
-				break
-			}
 		} else {
-			break
+			fmt.Printf("Couldn't parse the date: %s. Please try again.\n", endDate)
 		}
 	}
-	book.DateEnd = date
 
 	for {
 		state := BookState(printAndScan("Reading State: ", scanner))
