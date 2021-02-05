@@ -176,7 +176,7 @@ func (store Store) DeleteBookEntry(bookID int) error {
 		// so we substract 1 for 0 starting arrays
 		bookID = bookID - 1
 		books := formatBookEntries(rawBytes)
-		if bookID < len(books) && bookID > 0 {
+		if bookID < len(books) && bookID >= 0 {
 			if err := bkt.Delete(itob(books[bookID].ID)); err != nil {
 				return err
 			}
