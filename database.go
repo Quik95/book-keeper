@@ -103,20 +103,19 @@ func (store Store) PrintBookEntries() error {
 		bookList := formatBookEntries(bookBytes)
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"Index", "Title", "Author", "Start Date", "End Date", "Reading State"})
-		form := "02 January 2006"
 		for i, book := range bookList {
 			var dateStart string
 			var dateEnd string
 			if book.DateStart.IsZero() {
-				dateStart = "??-??-????"
+				dateStart = "??/??/????"
 			} else {
-				dateStart = book.DateStart.Format(form)
+				dateStart = book.DateStart.Format(DateFormat)
 			}
 
 			if book.DateEnd.IsZero() {
-				dateEnd = "??-??-????"
+				dateEnd = "??/??/????"
 			} else {
-				dateEnd = book.DateEnd.Format(form)
+				dateEnd = book.DateEnd.Format(DateFormat)
 			}
 
 			table.Append(
@@ -210,6 +209,9 @@ type BookEntry struct {
 
 // BookState represents the state in which a book is currently in
 type BookState string
+
+// DateFormat represents the format in which a date is displayed
+const DateFormat = "02/01/2006"
 
 const (
 	Reading   BookState = "reading"

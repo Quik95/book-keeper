@@ -72,7 +72,7 @@ func handleAdd(store Store, scanner *bufio.Scanner) {
 			break
 		} else if len(startDate) > 0 {
 			// if user provided a date try to parse it
-			if d, err := time.Parse("02-05-2006", startDate); err != nil {
+			if d, err := time.Parse(DateFormat, startDate); err != nil {
 				fmt.Printf("Couldn't parse the date: %s. Please try again.\n", startDate)
 			} else {
 				// date has been parsed successfully, break from the loop
@@ -93,7 +93,7 @@ func handleAdd(store Store, scanner *bufio.Scanner) {
 			date = time.Time{}
 			break
 		} else if len(endDate) > 0 {
-			if d, err := time.Parse("02-05-2006", endDate); err != nil {
+			if d, err := time.Parse(DateFormat, endDate); err != nil {
 				fmt.Printf("Couldn't parse the date: %s. Please try again.\n", endDate)
 			} else {
 				date = d
