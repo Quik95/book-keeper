@@ -187,6 +187,36 @@ func (store Store) DeleteBookEntry(bookID int) error {
 	})
 }
 
+// GetBookWithIndex retrieves a book from the database by an index presented to the user
+func (store Store) GetBookWithIndex(idx int) (BookEntry, error) {
+	var books []BookEntry
+	err := store.db.View(func(tx *bolt.Tx) error {
+		bkt := tx.Bucket([]byte("store"))
+		if bkt == nil {
+			return fmt.Errorf("Failed to retrieve the default store")
+		}
+
+		var rawBytes [][]byte
+		bkt.ForEach(func(_, v []byte) error {
+			rawBytes = append(rawBytes, v)
+			return nil
+		})
+
+		books = formatBookEntries(rawBytes)
+		return nil
+	})
+
+	if err != nil {
+		return BookEntry{}, fmt.Errorf("An error occurred while retrieving books data")
+	}
+
+	bookIdx := idx - 1
+	if bookIdx >= 0 && bookIdx < len(books) {
+		return books[bookIdx], nil
+	}
+
+	return BookEntry{}, fmt.Errorf("Invalid book ID")
+}
 // itob returns an 8-byte big endian representation of v.
 // taken from boltdb docs
 func itob(v int) []byte {
