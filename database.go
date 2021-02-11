@@ -217,6 +217,28 @@ func (store Store) GetBookWithIndex(idx int) (BookEntry, error) {
 
 	return BookEntry{}, fmt.Errorf("Invalid book ID")
 }
+
+// GetNumberOfBookEntries retrieves a number of BookEntries in the database
+// returns 0 if it encountes any error
+func (store Store) GetNumberOfBookEntries() int {
+	var n int
+	err := store.db.View(func(tx *bolt.Tx) error {
+		bkt := tx.Bucket([]byte("store"))
+		if bkt == nil {
+			return fmt.Errorf("Failed to retrieve the default store")
+		}
+
+		n = bkt.Stats().KeyN
+		return nil
+	})
+
+	if err != nil {
+		n = 0
+	}
+
+	return n
+}
+
 // itob returns an 8-byte big endian representation of v.
 // taken from boltdb docs
 func itob(v int) []byte {
