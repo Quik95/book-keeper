@@ -239,6 +239,22 @@ func (store Store) GetNumberOfBookEntries() int {
 	return n
 }
 
+// UpdateBookEntry replaces a book with the given ID with a new version
+func (store Store) UpdateBookEntry(bookID []byte, newBookEntry BookEntry) error {
+	return store.db.Update(func(tx *bolt.Tx) error {
+		bkt := tx.Bucket([]byte("store"))
+		if bkt == nil {
+			return fmt.Errorf("Failed to retrieve the default store")
+		}
+
+		rawBookBytes, err := json.Marshal(newBookEntry)
+		if err != nil {
+			return err
+		}
+		return bkt.Put(bookID, rawBookBytes)
+	})
+}
+
 // itob returns an 8-byte big endian representation of v.
 // taken from boltdb docs
 func itob(v int) []byte {
