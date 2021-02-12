@@ -77,44 +77,11 @@ func parseDateInput(input string) (time.Time, error) {
 func handleAdd(store Store, scanner *bufio.Scanner) {
 	book := BookEntry{}
 
-	title := askUntilTheConditionHasBeenMet("Title: ", scanner, func(s string) (interface{}, error) {
-		if len(s) <= 0 {
-			return "", fmt.Errorf("Cannot use an empty string as a book title. Please try again.\n")
-		}
-		return s, nil
-	}).(string)
-	book.Title = title
-
-	author := askUntilTheConditionHasBeenMet("Author: ", scanner, func(s string) (interface{}, error) {
-		if len(s) <= 0 {
-			return "", fmt.Errorf("Cannot use an empty string as a book author. Please try again.\n")
-		}
-		return s, nil
-	}).(string)
-	book.Author = author
-
-	startDate := askUntilTheConditionHasBeenMet("Start Date (leave empty for the current day or ??? for and undefined date): ", scanner, func(s string) (interface{}, error) {
-		date, err := parseDateInput(s)
-		if err != nil {
-			return nil, fmt.Errorf("Couldn't parse the date: %s. Please try again.\n", s)
-		} else {
-			return date, nil
-		}
-	}).(time.Time)
-	book.DateStart = startDate
-
-	endDate := askUntilTheConditionHasBeenMet("End Date (leave empty for the current day or ??? for and undefined date): ", scanner, func(s string) (interface{}, error) {
-		date, err := parseDateInput(s)
-		if err != nil {
-			return nil, fmt.Errorf("Couldn't parse the date: %s. Please try again.\n", s)
-		} else {
-			return date, nil
-		}
-	}).(time.Time)
-	book.DateEnd = endDate
-
-	state := getBookState(scanner)
-	book.State = state
+	setBookTitle(&book, scanner)
+	setBookAuthor(&book, scanner)
+	setBookDate("start", &book, scanner)
+	setBookDate("end", &book, scanner)
+	setBookState(&book, scanner)
 
 	if err := store.AddBookEntry(book); err != nil {
 		fmt.Printf("Failed to add a book to the collection\n%s\n", err)
@@ -172,46 +139,51 @@ func getBookIdx(store Store, scanner *bufio.Scanner) int {
 
 func updateBookProperty(oldBook BookEntry, scanner *bufio.Scanner) BookEntry {
 	msg := "Please select the property you want to update:1. Title\n2. Author\n3. Date Start\n4. Date End\n5. Book State\nChoice: "
-	return askUntilTheConditionHasBeenMet(msg, scanner, func(s string) (interface{}, error) {
+	updatedBook := oldBook
+	var _ = askUntilTheConditionHasBeenMet(msg, scanner, func(s string) (interface{}, error) {
 		switch s {
 		case "1":
-			return updateBookTitle(oldBook, scanner), nil
+			setBookTitle(&updatedBook, scanner)
+			return nil, nil
 		case "2":
-			return updateBookAuthor(oldBook, scanner), nil
+			setBookAuthor(&updatedBook, scanner)
+			return nil, nil
 		case "3":
-			return updateBookDate("start", oldBook, scanner), nil
+			setBookDate("start", &updatedBook, scanner)
+			return nil, nil
 		case "4":
-			return updateBookDate("end", oldBook, scanner), nil
+			setBookDate("end", &updatedBook, scanner)
+			return nil, nil
 		case "5":
-			return updateBookState(oldBook, scanner), nil
+			setBookState(&updatedBook, scanner)
+			return nil, nil
 		default:
-			return BookEntry{}, fmt.Errorf("%s is not a valid book property. Please try again.\n", s)
+			return nil, fmt.Errorf("%s is not a valid book property. Please try again.\n", s)
 		}
-	}).(BookEntry)
+	})
+	return updatedBook
 }
 
-func updateBookTitle(oldBook BookEntry, scanner *bufio.Scanner) BookEntry {
-	newTitle := askUntilTheConditionHasBeenMet("Please provide a new title: ", scanner, func(s string) (interface{}, error) {
+func setBookTitle(book *BookEntry, scanner *bufio.Scanner) {
+	newTitle := askUntilTheConditionHasBeenMet("Title: ", scanner, func(s string) (interface{}, error) {
 		if len(s) > 0 {
 			return s, nil
 		} else {
 			return "", fmt.Errorf("Cannot use an empty string as a book title. Please try again.\n")
 		}
 	}).(string)
-	oldBook.Title = newTitle
-	return oldBook
+	book.Title = newTitle
 }
 
-func updateBookAuthor(oldBook BookEntry, scanner *bufio.Scanner) BookEntry {
-	newAuthor := askUntilTheConditionHasBeenMet("Please provide a new book author: ", scanner, func(s string) (interface{}, error) {
+func setBookAuthor(book *BookEntry, scanner *bufio.Scanner) {
+	setBookState := askUntilTheConditionHasBeenMet("Author: ", scanner, func(s string) (interface{}, error) {
 		if len(s) > 0 {
 			return s, nil
 		} else {
 			return "", fmt.Errorf("Cannot use an empty string as a book author. Please try again.\n")
 		}
 	}).(string)
-	oldBook.Author = newAuthor
-	return oldBook
+	book.Author = setBookState
 }
 
 func getBookState(scanner *bufio.Scanner) BookState {
@@ -233,12 +205,12 @@ func getBookState(scanner *bufio.Scanner) BookState {
 	return st
 }
 
-func updateBookDate(dateType string, oldBook BookEntry, scanner *bufio.Scanner) BookEntry {
+func setBookDate(dateType string, book *BookEntry, scanner *bufio.Scanner) {
 	var msg string
 	if dateType == "start" {
-		msg = "Please provide a new start date: "
+		msg = "Start Date: "
 	} else {
-		msg = "Please provide a new end date: "
+		msg = "End Date: "
 	}
 
 	newDate := askUntilTheConditionHasBeenMet(msg, scanner, func(s string) (interface{}, error) {
@@ -250,23 +222,15 @@ func updateBookDate(dateType string, oldBook BookEntry, scanner *bufio.Scanner) 
 		}
 	}).(time.Time)
 	if dateType == "start" {
-		oldBook.DateStart = newDate
+		book.DateStart = newDate
 	} else {
-		oldBook.DateEnd = newDate
+		book.DateEnd = newDate
 	}
-	return oldBook
 }
 
-func updateBookState(oldBook BookEntry, scanner *bufio.Scanner) BookEntry {
-	newState := askUntilTheConditionHasBeenMet("Please provide a new reading state: ", scanner, func(s string) (interface{}, error) {
-		bookState := BookState(s)
-		if err := bookState.IsValid(); err != nil {
-			return nil, fmt.Errorf("%s is not a valid reading state. Please try again.\n", s)
-		}
-		return bookState, nil
-	}).(BookState)
-	oldBook.State = newState
-	return oldBook
+func setBookState(book *BookEntry, scanner *bufio.Scanner) {
+	newState := getBookState(scanner)
+	book.State = newState
 }
 
 func askUntilTheConditionHasBeenMet(msg string, scanner *bufio.Scanner, callback func(s string) (interface{}, error)) interface{} {
