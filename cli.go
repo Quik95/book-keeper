@@ -136,8 +136,12 @@ func handleList(store Store) {
 
 func handleDelete(store Store, scanner *bufio.Scanner) {
 	idx := getBookIdx(store, scanner)
+	book, err := store.GetBookWithIndex(idx)
+	if err != nil {
+		fmt.Printf("A book with the index %d doesn't exists.\n", idx)
+	}
 
-	if err := store.DeleteBookEntry(idx); err != nil {
+	if err := store.DeleteBookEntry(itob(book.ID)); err != nil {
 		fmt.Printf("Failed to delete this book.\n%s\n", err)
 	}
 }

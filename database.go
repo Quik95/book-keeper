@@ -156,34 +156,14 @@ func (store Store) AddBookEntry(be BookEntry) error {
 }
 
 // DeleteBookEntry removes a book entry with a given id from the database
-func (store Store) DeleteBookEntry(bookID int) error {
+func (store Store) DeleteBookEntry(bookID []byte) error {
 	return store.db.Update(func(tx *bolt.Tx) error {
 		bkt := tx.Bucket([]byte("store"))
 		if bkt == nil {
 			return fmt.Errorf("Failed to retrieve the default store")
 		}
 
-		var rawBytes [][]byte
-		err := bkt.ForEach(func(k, v []byte) error {
-			rawBytes = append(rawBytes, v)
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-
-		// book indexes displayed to user start at 1
-		// so we substract 1 for 0 starting arrays
-		bookID = bookID - 1
-		books := formatBookEntries(rawBytes)
-		if bookID < len(books) && bookID >= 0 {
-			if err := bkt.Delete(itob(books[bookID].ID)); err != nil {
-				return err
-			}
-			return nil
-		}
-
-		return fmt.Errorf("Invalid book index")
+		return bkt.Delete(bookID)
 	})
 }
 
