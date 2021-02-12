@@ -250,5 +250,7 @@ func handleHelp() {
 		"list: list books in the database\n",
 		"add: adds a book to the database\n",
 		"delete: removes a book from the database\n",
+		"update: updates a selected book\n",
+		"help: prints this help\n",
 		"exit: exits from the program\n")
 }
