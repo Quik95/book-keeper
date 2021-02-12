@@ -77,43 +77,51 @@ func parseDateInput(input string) (time.Time, error) {
 func handleAdd(store Store, scanner *bufio.Scanner) {
 	book := BookEntry{}
 
-	title := printAndScan("Title: ", scanner)
+	title := askUntilTheConditionHasBeenMet("Title: ", scanner, func(s string) (interface{}, error) {
+		if len(s) <= 0 {
+			return "", fmt.Errorf("Cannot use an empty string as a book title. Please try again.\n")
+		}
+		return s, nil
+	}).(string)
 	book.Title = title
 
-	author := printAndScan("Author: ", scanner)
+	author := askUntilTheConditionHasBeenMet("Author: ", scanner, func(s string) (interface{}, error) {
+		if len(s) <= 0 {
+			return "", fmt.Errorf("Cannot use an empty string as a book author. Please try again.\n")
+		}
+		return s, nil
+	}).(string)
 	book.Author = author
 
-	for {
-		startDate := printAndScan("Start Date (leave empty for the current day or ??? for and undefined date): ", scanner)
-		date, err := parseDateInput(startDate)
-		if err == nil {
-			book.DateStart = date
-			break
+	startDate := askUntilTheConditionHasBeenMet("Start Date (leave empty for the current day or ??? for and undefined date): ", scanner, func(s string) (interface{}, error) {
+		date, err := parseDateInput(s)
+		if err != nil {
+			return nil, fmt.Errorf("Couldn't parse the date: %s. Please try again.\n", s)
 		} else {
-			fmt.Printf("Couldn't parse the date: %s. Please try again.\n", startDate)
+			return date, nil
 		}
-	}
+	}).(time.Time)
+	book.DateStart = startDate
 
-	for {
-		endDate := printAndScan("End Date (leave empty for the current day or ??? for and undefined date): ", scanner)
-		date, err := parseDateInput(endDate)
-		if err == nil {
-			book.DateEnd = date
-			break
+	endDate := askUntilTheConditionHasBeenMet("End Date (leave empty for the current day or ??? for and undefined date): ", scanner, func(s string) (interface{}, error) {
+		date, err := parseDateInput(s)
+		if err != nil {
+			return nil, fmt.Errorf("Couldn't parse the date: %s. Please try again.\n", s)
 		} else {
-			fmt.Printf("Couldn't parse the date: %s. Please try again.\n", endDate)
+			return date, nil
 		}
-	}
+	}).(time.Time)
+	book.DateEnd = endDate
 
-	for {
-		state := BookState(printAndScan("Reading State: ", scanner))
-		if err := state.IsValid(); err == nil {
-			book.State = BookState(state)
-			break
+	state := askUntilTheConditionHasBeenMet("Reading State: ", scanner, func(s string) (interface{}, error) {
+		st := BookState(s)
+		if err := st.IsValid(); err == nil {
+			return st, nil
 		} else {
-			fmt.Printf("%s. Please try again.\n", err)
+			return nil, fmt.Errorf("%s is not a valid reading state. Please try again.\n", s)
 		}
-	}
+	}).(BookState)
+	book.State = state
 
 	if err := store.AddBookEntry(book); err != nil {
 		fmt.Printf("Failed to add a book to the collection\n%s\n", err)
@@ -127,17 +135,7 @@ func handleList(store Store) {
 }
 
 func handleDelete(store Store, scanner *bufio.Scanner) {
-	var idx int
-	for {
-		input := printAndScan("Select a book number to delete: ", scanner)
-		i, err := strconv.Atoi(input)
-		if err != nil {
-			fmt.Printf("%s is not a valid book number. Please try again.\n", input)
-		} else {
-			idx = i
-			break
-		}
-	}
+	idx := getBookIdx(store, scanner)
 
 	if err := store.DeleteBookEntry(idx); err != nil {
 		fmt.Printf("Failed to delete this book.\n%s\n", err)
@@ -161,7 +159,7 @@ func handleUpdate(store Store, scanner *bufio.Scanner) {
 func getBookIdx(store Store, scanner *bufio.Scanner) int {
 	maxIdx := store.GetNumberOfBookEntries()
 
-	return askUntilTheConditionHasBeenMet("Please select the book index to edit: ", scanner, func(s string) (interface{}, error) {
+	return askUntilTheConditionHasBeenMet("Please select the book index: ", scanner, func(s string) (interface{}, error) {
 		i, err := strconv.Atoi(s)
 		if err != nil {
 			return 0, fmt.Errorf("Cannot parse %s into a number. Please try again.\n", s)
