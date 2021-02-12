@@ -113,14 +113,7 @@ func handleAdd(store Store, scanner *bufio.Scanner) {
 	}).(time.Time)
 	book.DateEnd = endDate
 
-	state := askUntilTheConditionHasBeenMet("Reading State: ", scanner, func(s string) (interface{}, error) {
-		st := BookState(s)
-		if err := st.IsValid(); err == nil {
-			return st, nil
-		} else {
-			return nil, fmt.Errorf("%s is not a valid reading state. Please try again.\n", s)
-		}
-	}).(BookState)
+	state := getBookState(scanner)
 	book.State = state
 
 	if err := store.AddBookEntry(book); err != nil {
@@ -219,6 +212,25 @@ func updateBookAuthor(oldBook BookEntry, scanner *bufio.Scanner) BookEntry {
 	}).(string)
 	oldBook.Author = newAuthor
 	return oldBook
+}
+
+func getBookState(scanner *bufio.Scanner) BookState {
+	msg := "Select a book state:\n1. Reading\n2. Finished\n3. Dropped\n4. Suspended\nChoice: "
+	st := askUntilTheConditionHasBeenMet(msg, scanner, func(s string) (interface{}, error) {
+		switch s {
+		case "1":
+			return Reading, nil
+		case "2":
+			return Finished, nil
+		case "3":
+			return Dropped, nil
+		case "4":
+			return Suspended, nil
+		default:
+			return nil, fmt.Errorf("%s is not a valid book state. Please select a number from 1 to 4.\n", s)
+		}
+	}).(BookState)
+	return st
 }
 
 func updateBookDate(dateType string, oldBook BookEntry, scanner *bufio.Scanner) BookEntry {
