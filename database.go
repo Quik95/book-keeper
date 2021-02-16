@@ -266,13 +266,14 @@ const (
 	Finished  BookState = "finished"
 	Dropped   BookState = "dropped"
 	Suspended BookState = "suspended"
+	ReRead    BookState = "re-read"
 )
 
 // IsValid checks if a given instance of a BookState is valid
 // if not returns an error
 func (bs BookState) IsValid() error {
 	switch bs {
-	case Reading, Finished, Dropped, Suspended:
+	case Reading, Finished, Dropped, Suspended, ReRead:
 		return nil
 	default:
 		return fmt.Errorf("%s is not a valid book state", bs)

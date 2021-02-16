@@ -187,7 +187,7 @@ func setBookAuthor(book *BookEntry, scanner *bufio.Scanner) {
 }
 
 func getBookState(scanner *bufio.Scanner) BookState {
-	msg := "Select a book state:\n1. Reading\n2. Finished\n3. Dropped\n4. Suspended\nChoice: "
+	msg := "Select a book state:\n1. Reading\n2. Finished\n3. Dropped\n4. Suspended\n5. Re reading\nChoice: "
 	st := askUntilTheConditionHasBeenMet(msg, scanner, func(s string) (interface{}, error) {
 		switch s {
 		case "1":
@@ -198,8 +198,10 @@ func getBookState(scanner *bufio.Scanner) BookState {
 			return Dropped, nil
 		case "4":
 			return Suspended, nil
+		case "5":
+			return ReRead, nil
 		default:
-			return nil, fmt.Errorf("%s is not a valid book state. Please select a number from 1 to 4.\n", s)
+			return nil, fmt.Errorf("%s is not a valid book state. Please select a number from 1 to 5.\n", s)
 		}
 	}).(BookState)
 	return st
