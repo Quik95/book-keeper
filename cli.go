@@ -10,10 +10,10 @@ import (
 )
 
 func WaitForCommand(store Store) {
-	for {
-		var command string
-		scanner := bufio.NewScanner(os.Stdin)
+	var command string
+	scanner := bufio.NewScanner(os.Stdin)
 
+	for {
 		fmt.Print("> ")
 		if scanner.Scan() {
 			command = scanner.Text()
