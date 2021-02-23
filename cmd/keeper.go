@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 
 	kp "github.com/Quik95/book-keeper"
 )
@@ -19,9 +21,18 @@ func main() {
 	}
 
 	// when given a directory path automically set the database name
-	if filepath.Ext(location) != ".db" {
-		location = filepath.Join(location, "books.db")
+	file, err := os.Stat(location)
+	switch {
+	case err != nil:
+		log.Fatalf("%s is not a valid path.", location)
+	case file.IsDir():
+		location = path.Join(location, "books.db")
+	default:
+		if !strings.HasSuffix(location, ".db") {
+			log.Fatalf("%s uses an invalid extension", location)
+		}
 	}
+
 	// parse and validate the database path
 	dbLocation, err := filepath.Abs(location)
 	if err != nil {
